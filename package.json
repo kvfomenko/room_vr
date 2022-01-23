@@ -1,0 +1,19 @@
+{
+  "name": "static_server",
+  "version": "1.0.0",
+  "description": "room-vr",
+  "main": "static.js",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "node-static": "^0.7.11",
+    "three": "^0.136.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
