@@ -1,0 +1,5 @@
+{
+ "root_path":"E:/git_adlab/room_vr/web_root",
+ "port": 80,
+ "port_ssl": 443
+}
