@@ -111,6 +111,10 @@ window.addEventListener('resize', onWindowResize, false);
 animate();
 
 renderer.setAnimationLoop( function () {
+	cube.rotation.x += 0.01;
+	cube.rotation.y += 0.01;
+	particleSystem.rotation.z += 0.01;
+
 	renderer.render( scene, camera );
 } );
 
