@@ -31,11 +31,14 @@ light.shadow.mapSize.height = 512; // default
 light.shadow.camera.near = 0.1; // default
 light.shadow.camera.far = 2; // default
 
+let cubeTexture = THREE.ImageUtils.loadTexture('/textures/3.png');
+let planeTexture = THREE.ImageUtils.loadTexture('/textures/1.jpg');
+var particleTexture = THREE.ImageUtils.loadTexture('./textures/snow.png');
 
 const geometry = new THREE.BoxGeometry( 1, 1, 1, 2, 2, 2 );
 //const geometry = new THREE.SphereGeometry( 2, 6, 16 );
-//const geometry = new THREE.SphereGeometry( 1, 16, 16 );
-const material = new THREE.MeshStandardMaterial( { color: 0xff9900 } );
+//const material = new THREE.MeshStandardMaterial( { color: 0xff9900 } );
+const material = new THREE.MeshStandardMaterial({ map: cubeTexture, transparent: true,  color: 0xFFFFFF });
 const cube = new THREE.Mesh( geometry, material );
 cube.castShadow = true; //default is false
 cube.receiveShadow = true; //default
@@ -45,10 +48,25 @@ scene.add( cube );
 
 //Create a plane that receives shadows (but does not cast them)
 const planeGeometry = new THREE.PlaneGeometry( 10, 7, 7, 5 );
-const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } )
+const planeMaterial = new THREE.MeshStandardMaterial({ map: planeTexture, transparent: false, color: 0x00ff00 } )
 const plane = new THREE.Mesh( planeGeometry, planeMaterial );
 plane.receiveShadow = true;
 scene.add( plane );
+
+
+let particles = new THREE.BufferGeometry;
+const particles_count = 500;
+let vertices = new Float32Array(particles_count);
+for (let p = 0; p < particles_count * 3; p++) {
+	vertices[p] = Math.random() * 10 - 5;
+}
+particles.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+//var particleMaterial = new THREE.ParticleBasicMaterial({ color: 0xeeeeee, size: 0.05 });
+var particleMaterial = new THREE.ParticleBasicMaterial({ map: particleTexture, transparent: true, size: 0.1 });
+var particleSystem = new THREE.ParticleSystem(particles, particleMaterial);
+scene.add(particleSystem);
+
 
 //Create a helper for the shadow camera (optional)
 /*const helper = new THREE.CameraHelper( light.shadow.camera );
@@ -78,6 +96,7 @@ function animate() {
 	cube.rotation.y += 0.01;
 	/*line.rotation.x += 0.02;
 	line.rotation.y += 0.03;*/
+	particleSystem.rotation.z += 0.01;
 
 	renderer.render( scene, camera );
 };

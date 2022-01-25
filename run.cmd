@@ -1,2 +1,1 @@
-﻿
 start node static.js
