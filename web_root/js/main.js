@@ -7,6 +7,11 @@ import { VRButton } from '/js/VRButton.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.1, 100 );
+//var controls = new THREE.VRControls(camera);
+/*var dolly = new THREE.Group();
+dolly.position.set( 5, 0, 5 );
+scene.add(dolly);
+dolly.add(camera);*/
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.shadowMap.enabled = true;
@@ -90,16 +95,25 @@ camera.position.z = 5;
 camera.lookAt(0,0,0);
 
 function animate() {
-	requestAnimationFrame( animate );
+	//requestAnimationFrame( animate );
 
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.01;
-	/*line.rotation.x += 0.02;
-	line.rotation.y += 0.03;*/
 	particleSystem.rotation.z += 0.01;
+
+	/*dolly.position.x += 0.1;
+	controls.update();*/
+	camera.position.z += 0.01;
 
 	renderer.render( scene, camera );
 };
+
+animate();
+
+renderer.setAnimationLoop( function () {
+	animate();
+} );
+
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
@@ -107,14 +121,3 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onWindowResize, false);
-
-animate();
-
-renderer.setAnimationLoop( function () {
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-	particleSystem.rotation.z += 0.01;
-
-	renderer.render( scene, camera );
-} );
-
