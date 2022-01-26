@@ -1,7 +1,8 @@
 ﻿import * as THREE from 'three'
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js ';
+import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls.js'
+//import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 //import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 //import * as THREE from '/js/three.js';
@@ -116,13 +117,16 @@ document.body.appendChild( VRButton.createButton( renderer ) );
 var camera_move = 0.01;
 var light_move = 0.05;
 var light2_move = -0.05;
-camera.position.y = 0;
-camera.position.z = 0;
+camera.position.x = 0;
+camera.position.y = 2 ;
+camera.position.z = 2;
 camera.lookAt(0,0,-1);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-//const firstPerson = new FirstPersonControls(camera, renderer.domElement);
-
+const controls = new OrbitControls(camera, renderer.domElement);
+const personControls = new FirstPersonControls(camera, renderer.domElement);
+personControls.lookSpeed = 0.1;
+personControls.movementSpeed = 10;
+const clock = new THREE.Clock(true);
 
 function animate() {
 	//requestAnimationFrame( animate );
@@ -131,13 +135,13 @@ function animate() {
 	cube.rotation.y += 0.01;
 	particleSystem.rotation.y += 0.002;
 
-	if (camera.position.y > 3) {
+	/*if (camera.position.y > 3) {
 		camera_move = -0.01;
 	}
 	if (camera.position.y < -2) {
 		camera_move = 0.01;
 	}
-	camera.position.y += camera_move;
+	camera.position.y += camera_move;*/
 
 	if (light.position.x >= 3) {
 		light_move = -0.05;
@@ -156,7 +160,8 @@ function animate() {
 	light2.position.x += light2_move;
 
 
-	controls.update();
+	//controls.update();
+	personControls.update(clock.getDelta());
 	renderer.render(scene, camera);
 };
 
@@ -170,7 +175,7 @@ renderer.setAnimationLoop( function () {
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	firstPerson.handleResize();
+	//firstPerson.handleResize();
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
