@@ -1,5 +1,5 @@
 {
-  "name": "static_server",
+  "name": "room-vr",
   "version": "1.0.0",
   "description": "room-vr",
   "main": "static.js",
@@ -12,8 +12,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node static.js"
   },
-  "author": "",
+  "author": "KFomenko",
   "license": "ISC"
 }

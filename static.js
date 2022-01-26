@@ -13,25 +13,35 @@ const options = {
 };
 
 http.createServer(function (request, response) {
-    request.addListener('end', function () {
-	log(response.statusCode + ' ' + request.method + ' ' + request.url /*+ ' '  + JSON.stringify(request.headers)*/ );
-
-        file.serve(request, response);
-    }).resume();
-
+    http_request_event(conf.port, request, response);
 }).listen(conf.port);
 console.log('server is listening on ' + conf.port);
 
 https.createServer(options,function (request, response) {
-    request.addListener('end', function () {
-        log(response.statusCode + ' ' + request.method + ' ' + request.url /*+ ' '  + JSON.stringify(request.headers)*/ );
-
-        file.serve(request, response);
-    }).resume();
-
+    http_request_event(conf.port_ssl, request, response);
 }).listen(conf.port_ssl);
 console.log('server is listening on ' + conf.port_ssl);
 
+function http_request_event(port, request, response) {
+    request.addListener('end', function () {
+
+        file.serve(request, response, function (e, res) {
+            if (e) {
+                if (e.status === 404) {
+                    file.serveFile('/404.html', 404, {}, request, response);
+                } else {
+                    file.serveFile('/500.html', 500, {}, request, response);
+                }
+                var statusCode = e.status;
+            } else {
+                statusCode = res.status;
+            }
+
+            log(statusCode + ' ' + request.method + ' :' + port + request.url /*+ ' '  + JSON.stringify(request.headers)*/ );
+        });
+
+    }).resume();
+}
 
 
 function addLeadingZero(val, digits) {
