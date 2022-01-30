@@ -1,8 +1,12 @@
-﻿import * as THREE from 'three'
+﻿"use strict";
+
+import * as THREE from 'three'
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls.js'
-//import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import * as UTILS from './utils.js'
+import * as GAMEPAD from './gamepad.js'
 
 //import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
 //import * as THREE from '/js/three.js';
@@ -55,8 +59,8 @@ light2.shadow.camera.far = 3;
 scene.add( light2 );
 
 
+UTILS.draw_axis(scene,9, 3);
 
-draw_axis(9, 3);
 
 const cubeTexture = new THREE.TextureLoader().load( '/textures/3.png' );
 const planeTexture = new THREE.TextureLoader().load( '/textures/6.png' );
@@ -71,6 +75,19 @@ cube.receiveShadow = true;
 cube.position.z = -5;
 scene.add( cube );
 
+// create an AudioListener and add it to the camera
+const listener = new THREE.AudioListener();
+camera.add( listener );
+// create the PositionalAudio object (passing in the listener)
+const sound = new THREE.PositionalAudio( listener );
+// load a sound and set it as the PositionalAudio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( '/audio/kapli-zvuk-kapel-iz-krana.mp3', function( buffer ) {
+	sound.setBuffer( buffer );
+	sound.setRefDistance( 0.5 );
+	sound.play();
+});
+cube.add( sound );
 
 //Create a plane that receives shadows (but does not cast them)
 const planeGeometry = new THREE.PlaneGeometry( 20, 20, 5, 5 );
@@ -107,8 +124,8 @@ loader.load( '/models/house.glb', function ( gltf ) {
 	scene.add( gltf.scene );
 }, undefined, function ( error ) {
 	console.error( error );
-} );*/
-
+} );
+*/
 
 
 renderer.xr.enabled = true;
@@ -130,10 +147,19 @@ const clock = new THREE.Clock(true);
 
 function animate() {
 	//requestAnimationFrame( animate );
+	let buttons = GAMEPAD.getButtons();
+	//let axes = GAMEPAD.getAxes();
 
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.01;
 	particleSystem.rotation.y += 0.002;
+
+	if (buttons[GAMEPAD.GAMEPAD_A]) {
+		cube.position.z += 0.1;
+	}
+	if (buttons[GAMEPAD.GAMEPAD_B]) {
+		cube.position.z -= 0.1;
+	}
 
 	/*if (camera.position.y > 3) {
 		camera_move = -0.01;
@@ -143,7 +169,7 @@ function animate() {
 	}
 	camera.position.y += camera_move;*/
 
-	if (light.position.x >= 3) {
+	/*if (light.position.x >= 3) {
 		light_move = -0.05;
 	}
 	if (light.position.x <= -3) {
@@ -157,7 +183,7 @@ function animate() {
 	if (light2.position.x <= -3) {
 		light2_move = 0.05;
 	}
-	light2.position.x += light2_move;
+	light2.position.x += light2_move;*/
 
 
 	//controls.update();
@@ -175,54 +201,10 @@ renderer.setAnimationLoop( function () {
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	//firstPerson.handleResize();
+	personControls.handleResize();
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onWindowResize, false);
 
 
-function draw_axis(distance, size) {
-
-	const tex_x_minus = new THREE.TextureLoader().load('/textures/x_minus.png');
-	const tex_x_plus = new THREE.TextureLoader().load('/textures/x_plus.png');
-	const tex_y_minus = new THREE.TextureLoader().load('/textures/y_minus.png');
-	const tex_y_plus = new THREE.TextureLoader().load('/textures/y_plus.png');
-	const tex_z_minus = new THREE.TextureLoader().load('/textures/z_minus.png');
-	const tex_z_plus = new THREE.TextureLoader().load('/textures/z_plus.png');
-
-	var geometry_1 = new THREE.BoxGeometry(0, size, size, 1, 1, 1);
-	var material_1 = new THREE.MeshBasicMaterial({map: tex_x_plus, transparent: true, color: 0xFFFFFF});
-	var obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.x = distance;
-	scene.add(obj_1);
-
-	material_1 = new THREE.MeshBasicMaterial({map: tex_x_minus, transparent: true, color: 0xFFFFFF});
-	obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.x = -distance;
-	scene.add(obj_1);
-
-	geometry_1 = new THREE.BoxGeometry(size, 0, size, 1, 1, 1);
-	material_1 = new THREE.MeshBasicMaterial({map: tex_y_plus, transparent: true, color: 0xFFFFFF});
-	obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.y = distance;
-	scene.add(obj_1);
-
-	material_1 = new THREE.MeshBasicMaterial({map: tex_y_minus, transparent: true, color: 0xFFFFFF});
-	obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.y = -distance;
-	scene.add(obj_1);
-
-	geometry_1 = new THREE.BoxGeometry(size, size, 0, 1, 1, 1);
-	material_1 = new THREE.MeshBasicMaterial({map: tex_z_plus, transparent: true, color: 0xFFFFFF});
-	obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.z = distance;
-	scene.add(obj_1);
-
-	material_1 = new THREE.MeshBasicMaterial({map: tex_z_minus, transparent: true, color: 0xFFFFFF});
-	obj_1 = new THREE.Mesh(geometry_1, material_1);
-	obj_1.position.z = -distance;
-	scene.add(obj_1);
-
-
-}

@@ -4,7 +4,7 @@
 	https = require('https'),
     conf = require('./static_conf.json');
 
-let file = new static.Server(conf.root_path, { cache: 60, serverInfo: 'VRServer', indexFile: '3d.html'});
+let file = new static.Server(conf.root_path, { cache: 60, serverInfo: 'VRServer', indexFile: 'index.html'});
 
 
 const options = {
@@ -25,9 +25,9 @@ console.log('server is listening on ' + conf.port_ssl);
 function http_request_event(port, request, response) {
     request.addListener('end', function () {
 
-        if (/^\/npm\//.test(request.url)) {
+        /*if (/^\/npm\//.test(request.url)) {
             request.url = request.url.replace(/^\/npm\//, '../node_modules/');
-        }
+        }*/
 
         file.serve(request, response, function (e, res) {
             if (e) {

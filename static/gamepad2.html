@@ -1,0 +1,17 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+<div id="data"></div>
+<script>
+	var d = document.getElementById("data");
+
+	function updateStatus() {
+		var buttons = getButtons();
+		var axes = getAxes();
+		d.innerHTML = '' + buttons + '<br/>X: ' + axes;
+	}
+	setInterval(updateStatus, 1000);
+
+</script>
+</body>
+</html>
