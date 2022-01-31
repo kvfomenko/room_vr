@@ -1,11 +1,13 @@
 ﻿"use strict";
 
 const isSimulation = true;
-let simulationData = {buttons: [1,0,1,0], axes: [-0.5, 0.5]}; //default simulationData
+let simulationData = {buttons: [false,false,false,false], axes: [0,0,0,0]}; //default simulationData
 const buttons_map = [1,3,2,0];
 const axes_UpDown_map = [0,-1,1]; // <axes_id>,<UP-direction>,<DOWN-direction>
 const axes_LeftRight_map = [1,1,-1]; // <axes_id>,<LEFT-direction>,<RIGHT-direction>
 const max_button_id = 3;
+const min_axes_sensitivity = 0.1;
+
 const GAMEPAD_A = 0;
 const GAMEPAD_B = 1;
 const GAMEPAD_C = 2;
@@ -36,9 +38,9 @@ function scanGamepads() {
 			game_controllers[gamepads[i].index] = gamepads[i];
 		}
 	}
-	if (isSimulation && gamepads.length === 0) {
+/*	if (isSimulation && game_controllers.length === 0) {
 		game_controllers[0] = simulationData;
-	}
+	}*/
 }
 
 function connectHandler(e) {
@@ -54,7 +56,7 @@ function getButtons() {
 	scanGamepads();
 	let button_vals = [false,false,false,false];
 	for (let j in game_controllers) {
-		let controller = game_controllers[j];
+		var controller = game_controllers[j];
 		for (let i = 0; i < controller.buttons.length && i <= max_button_id; i++) {
 			let val = controller.buttons[i];
 			let pressed = val == 1.0;
@@ -71,6 +73,10 @@ function getButtons() {
 			}
 		}
 	}
+
+	if (isSimulation && !controller) {
+		button_vals = simulationData.buttons;
+	}
 	return button_vals;
 }
 
@@ -79,27 +85,96 @@ function getAxes() {
 	scanGamepads();
 	let axes_vals = [0,0,0,0];
 	for (let j in game_controllers) {
-		let controller = game_controllers[j];
+		var controller = game_controllers[j];
 		for (let i=0; i<controller.axes.length; i++) {
-			if (i === axes_UpDown_map[0]) {
-				if (Math.sign(controller.axes[i]) === axes_UpDown_map[1]) {
-					axes_vals[0] = Math.round(Math.abs(controller.axes[i]) * 100); //UP
-				} else if (Math.sign(controller.axes[i]) === axes_UpDown_map[2]) {
-					axes_vals[1] = Math.round(Math.abs(controller.axes[i]) * 100); //DOWN
+			if (Math.abs(controller.axes[i]) >= min_axes_sensitivity) {
+				if (i === axes_UpDown_map[0]) {
+					if (Math.sign(controller.axes[i]) === axes_UpDown_map[1]) {
+						axes_vals[0] = Math.round(Math.abs(controller.axes[i]) * 100); //UP
+					} else if (Math.sign(controller.axes[i]) === axes_UpDown_map[2]) {
+						axes_vals[1] = Math.round(Math.abs(controller.axes[i]) * 100); //DOWN
+					}
 				}
-			}
-			if (i === axes_LeftRight_map[0]) {
-				if (Math.sign(controller.axes[i]) === axes_LeftRight_map[1]) {
-					axes_vals[2] = Math.round(Math.abs(controller.axes[i]) * 100); //LEFT
-				} else if (Math.sign(controller.axes[i]) === axes_LeftRight_map[2]) {
-					axes_vals[3] = Math.round(Math.abs(controller.axes[i]) * 100); //RIGHT
+				if (i === axes_LeftRight_map[0]) {
+					if (Math.sign(controller.axes[i]) === axes_LeftRight_map[1]) {
+						axes_vals[2] = Math.round(Math.abs(controller.axes[i]) * 100); //LEFT
+					} else if (Math.sign(controller.axes[i]) === axes_LeftRight_map[2]) {
+						axes_vals[3] = Math.round(Math.abs(controller.axes[i]) * 100); //RIGHT
+					}
 				}
 			}
 		}
 	}
+
+	if (isSimulation && !controller) {
+		axes_vals = simulationData.axes;
+	}
 	return axes_vals;
 }
 
+function keyDown(e) {
+	switch(e.key){
+		case "w":
+			simulationData.buttons[GAMEPAD_A] = true;
+			break;
+		case "s":
+			simulationData.buttons[GAMEPAD_B] = true;
+			break;
+		case "a":
+			simulationData.buttons[GAMEPAD_C] = true;
+			break;
+		case "d":
+			simulationData.buttons[GAMEPAD_D] = true;
+			break;
+
+		case "ArrowUp":
+			simulationData.axes[GAMEPAD_UP] = 100;
+			break;
+		case "ArrowDown":
+			simulationData.axes[GAMEPAD_DOWN] = 100;
+			break;
+		case "ArrowLeft":
+			simulationData.axes[GAMEPAD_LEFT] = 100;
+			break;
+		case "ArrowRight":
+			simulationData.axes[GAMEPAD_RIGHT] = 100;
+			break;
+	}
+}
+function keyUp(e) {
+	switch(e.key){
+		case "w":
+			simulationData.buttons[GAMEPAD_A] = false;
+			break;
+		case "s":
+			simulationData.buttons[GAMEPAD_B] = false;
+			break;
+		case "a":
+			simulationData.buttons[GAMEPAD_C] = false;
+			break;
+		case "d":
+			simulationData.buttons[GAMEPAD_D] = false;
+			break;
+
+		case "ArrowUp":
+			simulationData.axes[GAMEPAD_UP] = 0;
+			break;
+		case "ArrowDown":
+			simulationData.axes[GAMEPAD_DOWN] = 0;
+			break;
+		case "ArrowLeft":
+			simulationData.axes[GAMEPAD_LEFT] = 0;
+			break;
+		case "ArrowRight":
+			simulationData.axes[GAMEPAD_RIGHT] = 0;
+			break;
+	}
+}
+
+if (isSimulation) {
+	addEventListener("keydown", keyDown);
+	addEventListener("keyup", keyUp);
+}
 
 export {getButtons};
 export {getAxes};

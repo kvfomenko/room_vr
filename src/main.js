@@ -148,7 +148,8 @@ const clock = new THREE.Clock(true);
 function animate() {
 	//requestAnimationFrame( animate );
 	let buttons = GAMEPAD.getButtons();
-	//let axes = GAMEPAD.getAxes();
+	let axes = GAMEPAD.getAxes();
+	//console.log('buttons: ' + buttons + ' axes: ' + axes);
 
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.01;
@@ -161,6 +162,19 @@ function animate() {
 		cube.position.z -= 0.1;
 	}
 
+	if (axes[GAMEPAD.GAMEPAD_UP] > 0) {
+		camera.position.z -= axes[GAMEPAD.GAMEPAD_UP] / 500;
+	}
+	if (axes[GAMEPAD.GAMEPAD_DOWN] > 0) {
+		camera.position.z += axes[GAMEPAD.GAMEPAD_DOWN] / 500;
+	}
+	if (axes[GAMEPAD.GAMEPAD_LEFT] > 0) {
+		camera.position.x -= axes[GAMEPAD.GAMEPAD_LEFT] / 500;
+	}
+	if (axes[GAMEPAD.GAMEPAD_RIGHT] > 0) {
+		camera.position.x += axes[GAMEPAD.GAMEPAD_RIGHT] / 500;
+	}
+
 	/*if (camera.position.y > 3) {
 		camera_move = -0.01;
 	}
@@ -169,7 +183,7 @@ function animate() {
 	}
 	camera.position.y += camera_move;*/
 
-	/*if (light.position.x >= 3) {
+	if (light.position.x >= 3) {
 		light_move = -0.05;
 	}
 	if (light.position.x <= -3) {
@@ -183,15 +197,17 @@ function animate() {
 	if (light2.position.x <= -3) {
 		light2_move = 0.05;
 	}
-	light2.position.x += light2_move;*/
+	light2.position.x += light2_move;
 
 
 	//controls.update();
-	personControls.update(clock.getDelta());
+	//personControls.update(clock.getDelta());
 	renderer.render(scene, camera);
 };
 
 animate();
+
+
 
 renderer.setAnimationLoop( function () {
 	animate();
