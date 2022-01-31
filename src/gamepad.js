@@ -2,7 +2,7 @@
 
 const isSimulation = true;
 let simulationData = {buttons: [false,false,false,false], axes: [0,0,0,0]}; //default simulationData
-const buttons_map = [1,3,2,0];
+const buttons_ABCD_map = [1,3,2,0]; // <A>,<B>,<C>,<D>
 const axes_UpDown_map = [0,-1,1]; // <axes_id>,<UP-direction>,<DOWN-direction>
 const axes_LeftRight_map = [1,1,-1]; // <axes_id>,<LEFT-direction>,<RIGHT-direction>
 const max_button_id = 3;
@@ -69,7 +69,7 @@ function getButtons() {
 				val = val.value;
 			}
 			if (pressed || touched) {
-				button_vals[buttons_map[i]] = true;
+				button_vals[buttons_ABCD_map[i]] = true;
 			}
 		}
 	}
