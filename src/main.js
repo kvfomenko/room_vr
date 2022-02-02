@@ -16,14 +16,10 @@ import * as GAMEPAD from './gamepad.js'
 //import { FirstPersonControls } from '/js/FirstPersonControls.js';
 //import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
+const PI = Math.PI;
+const PI2 = Math.PI * 2;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 0.1, 100 );
-
-//var controls = new THREE.VRControls(camera);
-/*var dolly = new THREE.Group();
-dolly.position.set( 5, 0, 5 );
-scene.add(dolly);
-dolly.add(camera);*/
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.shadowMap.enabled = true;
@@ -66,7 +62,7 @@ const cubeTexture = new THREE.TextureLoader().load( '/textures/3.png' );
 const planeTexture = new THREE.TextureLoader().load( '/textures/6.png' );
 const particleTexture = new THREE.TextureLoader().load( '/textures/snow2.png' );
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1, 2, 2, 2 );
+const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
 //const geometry = new THREE.SphereGeometry( 2, 6, 16 );
 const material = new THREE.MeshStandardMaterial({ map: cubeTexture, transparent: false,  color: 0xFFFFFF });
 const cube = new THREE.Mesh( geometry, material );
@@ -131,74 +127,133 @@ loader.load( '/models/house.glb', function ( gltf ) {
 renderer.xr.enabled = true;
 document.body.appendChild( VRButton.createButton( renderer ) );
 
-var camera_move = 0.01;
 var light_move = 0.05;
 var light2_move = -0.05;
-camera.position.x = 0;
-camera.position.y = 2 ;
-camera.position.z = 2;
-camera.lookAt(0,0,-1);
+camera.position.set(0, 1.5, 0);
+//camera.lookAt(0,3,-3);
+//camera.rotation.set(0, 2, 1);
+//camera.lookAt(0,0,-3);
+//camera.rotation.y = -1;
+//console.log('rotation ' + JSON.stringify(camera.rotation));
+//camera.rotation.set(-3.14/4, 0, 0);
+//camera.rotation.set(0, -3.14/4, 0);
+//console.log('rotation ' + JSON.stringify(camera.rotation));
 
-const controls = new OrbitControls(camera, renderer.domElement);
-const personControls = new FirstPersonControls(camera, renderer.domElement);
+let dolly = new THREE.Object3D();
+dolly.position.set( 0, 0, 0 );
+dolly.add(camera);
+scene.add(dolly);
+
+//console interface with text/buttons etc
+/*const console_geometry = new THREE.BoxGeometry(3, 2, 0.1, 1, 1, 1);
+const console_material = new THREE.MeshStandardMaterial({transparent: false,  color: 0x996666});
+const console = new THREE.Mesh(console_geometry, console_material);
+console.position.y = 1.5;
+console.position.z = -1.5;
+dolly.add(console);*/
+
+dolly.rotation.set(-3.14/4, 0, 0);
+dolly.rotation.set(0, -3.14/4, 0);
+
+let dolly_pos = new THREE.Object3D();
+camera.add(dolly_pos);
+
+
+//const controls = new OrbitControls(camera, renderer.domElement);
+/*const personControls = new FirstPersonControls(camera, renderer.domElement);
 personControls.lookSpeed = 0.1;
-personControls.movementSpeed = 10;
-const clock = new THREE.Clock(true);
+personControls.movementSpeed = 10;*/
 
-function animate() {
-	//requestAnimationFrame( animate );
-	let buttons = GAMEPAD.getButtons();
-	let axes = GAMEPAD.getAxes();
-	//console.log('buttons: ' + buttons + ' axes: ' + axes);
 
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-	particleSystem.rotation.y += 0.002;
-
-	if (buttons[GAMEPAD.GAMEPAD_A]) {
-		cube.position.z += 0.1;
-	}
-	if (buttons[GAMEPAD.GAMEPAD_B]) {
-		cube.position.z -= 0.1;
-	}
-
-	if (axes[GAMEPAD.GAMEPAD_UP] > 0) {
-		camera.position.z -= axes[GAMEPAD.GAMEPAD_UP] / 500;
-	}
-	if (axes[GAMEPAD.GAMEPAD_DOWN] > 0) {
-		camera.position.z += axes[GAMEPAD.GAMEPAD_DOWN] / 500;
-	}
-	if (axes[GAMEPAD.GAMEPAD_LEFT] > 0) {
-		camera.position.x -= axes[GAMEPAD.GAMEPAD_LEFT] / 500;
-	}
-	if (axes[GAMEPAD.GAMEPAD_RIGHT] > 0) {
-		camera.position.x += axes[GAMEPAD.GAMEPAD_RIGHT] / 500;
-	}
-
-	/*if (camera.position.y > 3) {
-		camera_move = -0.01;
-	}
-	if (camera.position.y < -2) {
-		camera_move = 0.01;
-	}
-	camera.position.y += camera_move;*/
+const light_move_speed = 1; // meters per second
+const cube_rotation_speed = 1/4; // rotations per second
+function sceneUpdate(clockDelta) {
+	cube.rotation.x += cube_rotation_speed * PI2 * clockDelta; // PI2 = 1 rotation per second
+	cube.rotation.y += cube_rotation_speed * PI2 * clockDelta;
+	particleSystem.rotation.y += PI/20 * clockDelta;
 
 	if (light.position.x >= 3) {
-		light_move = -0.05;
+		light_move = -light_move_speed * clockDelta;
 	}
 	if (light.position.x <= -3) {
-		light_move = 0.05;
+		light_move = light_move_speed * clockDelta;
 	}
 	light.position.x += light_move;
 
 	if (light2.position.x >= 3) {
-		light2_move = -0.05;
+		light2_move = -light_move_speed * clockDelta;
 	}
 	if (light2.position.x <= -3) {
-		light2_move = 0.05;
+		light2_move = light_move_speed * clockDelta;
 	}
 	light2.position.x += light2_move;
+}
 
+
+const dolly_move_speed = 6; // meters per second
+const dolly_turn_speed = 1; // rotations per second
+function gamepadUpdate(clockDelta) {
+	/*let buttons = GAMEPAD.getButtons();
+	let axes = GAMEPAD.getAxes();*/
+	let gamepadState = GAMEPAD.getAllState();
+	//console.log('buttons: ' + buttons + ' axes: ' + axes);
+	//console.log('rotation: ' + dolly.rotation.y);
+
+	dolly_pos = dolly.position.clone();
+	/*if (gamepadState.buttons[GAMEPAD.GAMEPAD_A]) {
+		dolly_pos.z -= dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.buttons[GAMEPAD.GAMEPAD_B]) {
+		dolly_pos.z += dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.buttons[GAMEPAD.GAMEPAD_C]) {
+		dolly_pos.x -= dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.buttons[GAMEPAD.GAMEPAD_D]) {
+		dolly_pos.x += dolly_move_speed * clockDelta;
+	}*/
+	if (gamepadState.buttons[GAMEPAD.GAMEPAD_TURN_LEFT]) {
+		dolly.rotation.set(0, dolly.rotation.y + PI * clockDelta, 0);
+	}
+	if (gamepadState.buttons[GAMEPAD.GAMEPAD_TURN_RIGHT]) {
+		dolly.rotation.set(0, dolly.rotation.y - PI * clockDelta, 0);
+	}
+
+	/*if (gamepadState.axes[GAMEPAD.GAMEPAD_UP] > 0) {
+		dolly_pos.z -= gamepadState.axes[GAMEPAD.GAMEPAD_UP] / 100 * dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.axes[GAMEPAD.GAMEPAD_DOWN] > 0) {
+		dolly_pos.z += gamepadState.axes[GAMEPAD.GAMEPAD_DOWN] / 100 * dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.axes[GAMEPAD.GAMEPAD_LEFT] > 0) {
+		dolly_pos.x -= gamepadState.axes[GAMEPAD.GAMEPAD_LEFT] / 100 * dolly_move_speed * clockDelta;
+	}
+	if (gamepadState.axes[GAMEPAD.GAMEPAD_RIGHT] > 0) {
+		dolly_pos.x += gamepadState.axes[GAMEPAD.GAMEPAD_RIGHT] / 100 * dolly_move_speed * clockDelta;
+	}*/
+
+	dolly.position.copy(dolly_pos);
+
+	//Store original dolly rotation
+	const quaternion = dolly.quaternion.clone();
+	//Get rotation for movement from the headset pose
+	var worldQuaternion = dolly_pos.getWorldQuaternion(new THREE.Quaternion());
+	dolly.quaternion.copy(worldQuaternion);
+
+	//dolly.quaternion.copy(dolly_pos.getWorldQuaternion());
+	dolly.translateZ(-(gamepadState.axes[GAMEPAD.GAMEPAD_UP] - gamepadState.axes[GAMEPAD.GAMEPAD_DOWN]) * dolly_move_speed * clockDelta);
+	dolly.translateX(-(gamepadState.axes[GAMEPAD.GAMEPAD_LEFT] - gamepadState.axes[GAMEPAD.GAMEPAD_RIGHT]) * dolly_move_speed * clockDelta);
+	dolly.position.y = 0;
+	dolly.quaternion.copy(quaternion);
+}
+
+const clock = new THREE.Clock(true);
+
+function animate() {
+	var clockDelta = clock.getDelta(); // seconds from prev frame
+
+	sceneUpdate(clockDelta);
+	gamepadUpdate(clockDelta);
 
 	//controls.update();
 	//personControls.update(clock.getDelta());
@@ -207,17 +262,13 @@ function animate() {
 
 animate();
 
-
-
-renderer.setAnimationLoop( function () {
-	animate();
-} );
+renderer.setAnimationLoop(animate);
 
 
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	personControls.handleResize();
+	//personControls.handleResize();
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }

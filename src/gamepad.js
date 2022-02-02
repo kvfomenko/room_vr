@@ -1,17 +1,19 @@
 ﻿"use strict";
 
-const isSimulation = true;
-let simulationData = {buttons: [false,false,false,false], axes: [0,0,0,0]}; //default simulationData
+//const isSimulation = true;
+let simulationData = {buttons: [false,false,false,false,false,false], axes: [0,0,0,0]}; //default simulationData
 const buttons_ABCD_map = [1,3,2,0]; // <A>,<B>,<C>,<D>
 const axes_UpDown_map = [0,-1,1]; // <axes_id>,<UP-direction>,<DOWN-direction>
 const axes_LeftRight_map = [1,1,-1]; // <axes_id>,<LEFT-direction>,<RIGHT-direction>
 const max_button_id = 3;
 const min_axes_sensitivity = 0.1;
 
-const GAMEPAD_A = 0;
-const GAMEPAD_B = 1;
-const GAMEPAD_C = 2;
-const GAMEPAD_D = 3;
+const GAMEPAD_A = 0; // W
+const GAMEPAD_B = 1; // S
+const GAMEPAD_C = 2; // A
+const GAMEPAD_D = 3; // D
+const GAMEPAD_TURN_LEFT = 4; // Q
+const GAMEPAD_TURN_RIGHT = 5; // E
 const GAMEPAD_UP = 0;
 const GAMEPAD_DOWN = 1;
 const GAMEPAD_LEFT = 2;
@@ -51,10 +53,9 @@ function disconnectHandler(e) {
 	delete game_controllers[e.gamepad.index];
 }
 
-// [<A>,<B>,<C>,<D>]
-function getButtons() {
-	scanGamepads();
-	let button_vals = [false,false,false,false];
+
+function decodeButtons() {
+	let button_vals = [false,false,false,false,false,false];
 	for (let j in game_controllers) {
 		var controller = game_controllers[j];
 		for (let i = 0; i < controller.buttons.length && i <= max_button_id; i++) {
@@ -74,15 +75,25 @@ function getButtons() {
 		}
 	}
 
-	if (isSimulation && !controller) {
-		button_vals = simulationData.buttons;
+	if (simulationData.buttons[GAMEPAD_A]) {
+		button_vals[GAMEPAD_A] = true;
 	}
+	if (simulationData.buttons[GAMEPAD_B]) {
+		button_vals[GAMEPAD_B] = true;
+	}
+	if (simulationData.buttons[GAMEPAD_C]) {
+		button_vals[GAMEPAD_C] = true;
+	}
+	if (simulationData.buttons[GAMEPAD_D]) {
+		button_vals[GAMEPAD_D] = true;
+	}
+	button_vals[GAMEPAD_TURN_LEFT] = simulationData.buttons[GAMEPAD_TURN_LEFT];
+	button_vals[GAMEPAD_TURN_RIGHT] = simulationData.buttons[GAMEPAD_TURN_RIGHT];
+
 	return button_vals;
 }
 
-// [<UP>,<DOWN>,<LEFT>,<RIGHT>]
-function getAxes() {
-	scanGamepads();
+function decodeAxis() {
 	let axes_vals = [0,0,0,0];
 	for (let j in game_controllers) {
 		var controller = game_controllers[j];
@@ -106,25 +117,78 @@ function getAxes() {
 		}
 	}
 
-	if (isSimulation && !controller) {
-		axes_vals = simulationData.axes;
+	if (simulationData.axes[GAMEPAD_UP] > 99) {
+		axes_vals[GAMEPAD_UP] = 100;
 	}
+	if (simulationData.axes[GAMEPAD_DOWN] > 99) {
+		axes_vals[GAMEPAD_DOWN] = 100;
+	}
+	if (simulationData.axes[GAMEPAD_LEFT] > 99) {
+		axes_vals[GAMEPAD_LEFT] = 100;
+	}
+	if (simulationData.axes[GAMEPAD_RIGHT] > 99) {
+		axes_vals[GAMEPAD_RIGHT] = 100;
+	}
+
 	return axes_vals;
 }
 
+
+// [<A>,<B>,<C>,<D>]
+function getButtons() {
+	scanGamepads();
+	return decodeButtons();
+}
+
+// [<UP>,<DOWN>,<LEFT>,<RIGHT>]
+function getAxes() {
+	scanGamepads();
+	return decodeAxis();
+}
+
+function getAllState() {
+	scanGamepads();
+	return {buttons:getButtons(), axes:decodeAxis()};
+}
+
 function keyDown(e) {
+	console.log('keyDown ' + e.key);
 	switch(e.key){
 		case "w":
+		case "W":
+		case "ц":
+		case "Ц":
 			simulationData.buttons[GAMEPAD_A] = true;
 			break;
 		case "s":
+		case "S":
+		case "ы":
+		case "Ы":
 			simulationData.buttons[GAMEPAD_B] = true;
 			break;
 		case "a":
+		case "A":
+		case "ф":
+		case "Ф":
 			simulationData.buttons[GAMEPAD_C] = true;
 			break;
 		case "d":
+		case "D":
+		case "в":
+		case "В":
 			simulationData.buttons[GAMEPAD_D] = true;
+			break;
+		case "q":
+		case "Q":
+		case "й":
+		case "Й":
+			simulationData.buttons[GAMEPAD_TURN_LEFT] = true;
+			break;
+		case "e":
+		case "E":
+		case "у":
+		case "У":
+			simulationData.buttons[GAMEPAD_TURN_RIGHT] = true;
 			break;
 
 		case "ArrowUp":
@@ -142,18 +206,43 @@ function keyDown(e) {
 	}
 }
 function keyUp(e) {
+	console.log('keyUp ' + e.key);
 	switch(e.key){
 		case "w":
+		case "W":
+		case "ц":
+		case "Ц":
 			simulationData.buttons[GAMEPAD_A] = false;
 			break;
 		case "s":
+		case "S":
+		case "ы":
+		case "Ы":
 			simulationData.buttons[GAMEPAD_B] = false;
 			break;
 		case "a":
+		case "A":
+		case "ф":
+		case "Ф":
 			simulationData.buttons[GAMEPAD_C] = false;
 			break;
 		case "d":
+		case "D":
+		case "в":
+		case "В":
 			simulationData.buttons[GAMEPAD_D] = false;
+			break;
+		case "q":
+		case "Q":
+		case "й":
+		case "Й":
+			simulationData.buttons[GAMEPAD_TURN_LEFT] = false;
+			break;
+		case "e":
+		case "E":
+		case "у":
+		case "У":
+			simulationData.buttons[GAMEPAD_TURN_RIGHT] = false;
 			break;
 
 		case "ArrowUp":
@@ -170,14 +259,25 @@ function keyUp(e) {
 			break;
 	}
 }
+addEventListener("keydown", keyDown);
+addEventListener("keyup", keyUp);
 
-if (isSimulation) {
-	addEventListener("keydown", keyDown);
-	addEventListener("keyup", keyUp);
+
+/*function pointerdown(e) {
+	console.log('pointerdown ' + JSON.stringify(e));
+	simulationData.buttons[GAMEPAD_A] = true;
+	simulationData.axes[GAMEPAD_UP] = 100;
+}
+function pointerup(e) {
+	console.log('pointerup ' + JSON.stringify(e));
+	simulationData.buttons[GAMEPAD_A] = false;
+	simulationData.axes[GAMEPAD_UP] = 0;
 }
 
-export {getButtons};
-export {getAxes};
-export {GAMEPAD_A,GAMEPAD_B,GAMEPAD_C,GAMEPAD_D};
+	addEventListener("pointerdown", pointerdown);
+	addEventListener("pointerup", pointerup);*/
+
+export {getButtons, getAxes, getAllState};
+export {GAMEPAD_A,GAMEPAD_B,GAMEPAD_C,GAMEPAD_D,GAMEPAD_TURN_LEFT,GAMEPAD_TURN_RIGHT};
 export {GAMEPAD_UP,GAMEPAD_DOWN,GAMEPAD_LEFT,GAMEPAD_RIGHT};
 
