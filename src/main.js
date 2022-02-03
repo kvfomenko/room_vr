@@ -20,6 +20,7 @@ const PI = Math.PI;
 const PI2 = Math.PI * 2;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 0.1, 100 );
+var gamepadState;
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.shadowMap.enabled = true;
@@ -29,120 +30,138 @@ renderer.shadowMap.needsUpdate = true;
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-const fogColor = new THREE.Color(0x666677);
-scene.background = fogColor;
-scene.fog = new THREE.Fog(fogColor, 0.0025, 10);
+var lights = [];
+function initLights() {
+	const fogColor = new THREE.Color(0x666677);
+	scene.background = fogColor;
+	scene.fog = new THREE.Fog(fogColor, 0.0025, 20);
 
-/*const light0 = new THREE.AmbientLight( 0x404040 );
-scene.add( light0 );*/
+	/*const light0 = new THREE.AmbientLight( 0x404040 );
+	scene.add( light0 );*/
 
-const light = new THREE.PointLight( 0xffffff, 1, 10 );
-light.position.set( 3, 2, 2 );
-light.castShadow = true;
-light.shadow.mapSize.width = 256;
-light.shadow.mapSize.height = 256;
-light.shadow.camera.near = 0.1;
-light.shadow.camera.far = 3;
-scene.add( light );
+	var light = new THREE.PointLight(0xffffff, 1, 10);
+	light.position.set(3, 2, 2);
+	light.castShadow = true;
+	light.shadow.mapSize.width = 256;
+	light.shadow.mapSize.height = 256;
+	light.shadow.camera.near = 0.1;
+	light.shadow.camera.far = 3;
+	lights.push(light);
+	scene.add(lights[0]);
 
-const light2 = new THREE.PointLight( 0xffffff, 1, 10 );
-light2.position.set( -3, 2, -4 );
-light2.castShadow = true;
-light2.shadow.mapSize.width = 256;
-light2.shadow.mapSize.height = 256;
-light2.shadow.camera.near = 0.1;
-light2.shadow.camera.far = 3;
-scene.add( light2 );
+	light = new THREE.PointLight(0xffffff, 1, 10);
+	light.position.set(-3, 2, -4);
+	light.castShadow = true;
+	light.shadow.mapSize.width = 256;
+	light.shadow.mapSize.height = 256;
+	light.shadow.camera.near = 0.1;
+	light.shadow.camera.far = 3;
 
+	lights.push(light);
+	scene.add(lights[1]);
+}
+initLights();
 
 UTILS.draw_axis(scene,9, 3);
 
+var cube, particleSystem;
+function initGeometry() {
+	const cubeTexture = new THREE.TextureLoader().load('/textures/3.png');
+	const planeTexture = new THREE.TextureLoader().load('/textures/6.png');
+	const particleTexture = new THREE.TextureLoader().load('/textures/snow2.png');
 
-const cubeTexture = new THREE.TextureLoader().load( '/textures/3.png' );
-const planeTexture = new THREE.TextureLoader().load( '/textures/6.png' );
-const particleTexture = new THREE.TextureLoader().load( '/textures/snow2.png' );
-
-const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
+	const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
 //const geometry = new THREE.SphereGeometry( 2, 6, 16 );
-const material = new THREE.MeshStandardMaterial({ map: cubeTexture, transparent: false,  color: 0xFFFFFF });
-const cube = new THREE.Mesh( geometry, material );
-cube.castShadow = true;
-cube.receiveShadow = true;
-cube.position.z = -5;
-scene.add( cube );
+	const material = new THREE.MeshStandardMaterial({map: cubeTexture, transparent: false, color: 0xFFFFFF});
+	cube = new THREE.Mesh(geometry, material);
+	cube.castShadow = true;
+	cube.receiveShadow = true;
+	cube.position.z = -5;
+	scene.add(cube);
 
 // create an AudioListener and add it to the camera
-const listener = new THREE.AudioListener();
-camera.add( listener );
+	const listener = new THREE.AudioListener();
+	camera.add(listener);
 // create the PositionalAudio object (passing in the listener)
-const sound = new THREE.PositionalAudio( listener );
+	const sound = new THREE.PositionalAudio(listener);
 // load a sound and set it as the PositionalAudio object's buffer
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load( '/audio/kapli-zvuk-kapel-iz-krana.mp3', function( buffer ) {
-	sound.setBuffer( buffer );
-	sound.setRefDistance( 0.5 );
-	sound.play();
-});
-cube.add( sound );
+	const audioLoader = new THREE.AudioLoader();
+	audioLoader.load('/audio/birds.mp3', function (buffer) {
+		sound.setBuffer(buffer);
+		sound.setLoop(true);
+		sound.setRefDistance(1);
+		sound.setDistanceModel('exponential');
+		sound.setRolloffFactor(3);
+		sound.setVolume(0.3);
+		sound.play();
+	});
+	cube.add(sound);
 
 //Create a plane that receives shadows (but does not cast them)
-const planeGeometry = new THREE.PlaneGeometry( 20, 20, 5, 5 );
-const planeMaterial = new THREE.MeshStandardMaterial({ map: planeTexture, transparent: false, color: 0xffffff } )
-const plane = new THREE.Mesh( planeGeometry, planeMaterial );
-plane.receiveShadow = true;
-plane.rotation.x = -Math.PI/2;
-plane.position.y = -3;
-scene.add( plane );
+	const planeGeometry = new THREE.PlaneGeometry(50, 50, 5, 5);
+	const planeMaterial = new THREE.MeshStandardMaterial({map: planeTexture, transparent: false, color: 0xffffff})
+	const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	plane.receiveShadow = true;
+	plane.rotation.x = -PI / 2;
+	plane.position.y = -3;
+	scene.add(plane);
 
 
-let particles = new THREE.BufferGeometry;
-const particles_count = 500;
-let vertices = new Float32Array(particles_count * 3);
-for (let p = 0; p < particles_count * 3; p++) {
-	vertices[p] = Math.random() * 10 - 5;
+	let particles = new THREE.BufferGeometry;
+	const particles_count = 500;
+	let vertices = new Float32Array(particles_count * 3);
+	for (let p = 0; p < particles_count * 3; p++) {
+		vertices[p] = Math.random() * 10 - 5;
+	}
+	particles.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+	var particleMaterial = new THREE.PointsMaterial({map: particleTexture, transparent: true, size: 0.05});
+	particleSystem = new THREE.Points(particles, particleMaterial);
+	scene.add(particleSystem);
 }
-particles.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-
-var particleMaterial = new THREE.PointsMaterial({ map: particleTexture, transparent: true, size: 0.05 });
-var particleSystem = new THREE.Points(particles, particleMaterial);
-scene.add(particleSystem);
+initGeometry();
 
 /*const lightHelper = new THREE.PointLightHelper( light, 1, 0xffff00 );
 scene.add(lightHelper);*/
 
-//Create a helper for the shadow camera (optional)
-/*const helper = new THREE.CameraHelper( light.shadow.camera );
-scene.add( helper );*/
+var dolly, dolly_pos, dummyCam;
+function initCamera() {
+	renderer.xr.enabled = true;
+	document.body.appendChild(VRButton.createButton(renderer));
 
-/*
-const loader = new GLTFLoader();
-loader.load( '/models/house.glb', function ( gltf ) {
-	scene.add( gltf.scene );
-}, undefined, function ( error ) {
-	console.error( error );
-} );
-*/
+	camera.position.set(0, 1.5, 0);
+	camera.rotation.set(-PI / 8, 0, 0);
 
+	dolly = new THREE.Object3D();
+	dolly.position.set(0, 0, 0);
+	dolly.add(camera);
+	scene.add(dolly);
 
-renderer.xr.enabled = true;
-document.body.appendChild( VRButton.createButton( renderer ) );
+	dolly_pos = new THREE.Object3D();
+	dummyCam = new THREE.Object3D();
+	camera.add(dummyCam);
+}
+initCamera();
 
-var light_move = 0.05;
-var light2_move = -0.05;
-camera.position.set(0, 1.5, 0);
-//camera.lookAt(0,3,-3);
-//camera.rotation.set(0, 2, 1);
-//camera.lookAt(0,0,-3);
-//camera.rotation.y = -1;
-//console.log('rotation ' + JSON.stringify(camera.rotation));
-//camera.rotation.set(-3.14/4, 0, 0);
-//camera.rotation.set(0, -3.14/4, 0);
-//console.log('rotation ' + JSON.stringify(camera.rotation));
-
-let dolly = new THREE.Object3D();
-dolly.position.set( 0, 0, 0 );
-dolly.add(camera);
-scene.add(dolly);
+function loadObjects() {
+	const loader = new GLTFLoader();
+	loader.load('/models/portal_gun.gltf',
+		function (gltf) {
+			/*gltf.scene.scale.set(0.01, 0.01, 0.01);
+			gltf.scene.position.set(0.5, -0.5, -0.5);*/
+			gltf.scene.scale.set(0.3, 0.3, 0.3);
+			gltf.scene.rotation.set(0, PI, 0);
+			gltf.scene.position.set(0.8, -0.6, 0.1);
+			camera.add(gltf.scene);
+			//scene.add(gltf.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error)
+		}
+	)
+}
+loadObjects();
 
 //console interface with text/buttons etc
 /*const console_geometry = new THREE.BoxGeometry(3, 2, 0.1, 1, 1, 1);
@@ -151,12 +170,6 @@ const console = new THREE.Mesh(console_geometry, console_material);
 console.position.y = 1.5;
 console.position.z = -1.5;
 dolly.add(console);*/
-
-dolly.rotation.set(-3.14/4, 0, 0);
-dolly.rotation.set(0, -3.14/4, 0);
-
-let dolly_pos = new THREE.Object3D();
-camera.add(dolly_pos);
 
 
 //const controls = new OrbitControls(camera, renderer.domElement);
@@ -172,30 +185,36 @@ function sceneUpdate(clockDelta) {
 	cube.rotation.y += cube_rotation_speed * PI2 * clockDelta;
 	particleSystem.rotation.y += PI/20 * clockDelta;
 
-	if (light.position.x >= 3) {
+	var light_move = 0, light2_move = 0;
+	if (lights[0].position.x >= 3) {
 		light_move = -light_move_speed * clockDelta;
 	}
-	if (light.position.x <= -3) {
+	if (lights[0].position.x <= -3) {
 		light_move = light_move_speed * clockDelta;
 	}
-	light.position.x += light_move;
+	lights[0].position.x += light_move;
 
-	if (light2.position.x >= 3) {
+	if (lights[1].position.x >= 3) {
 		light2_move = -light_move_speed * clockDelta;
 	}
-	if (light2.position.x <= -3) {
+	if (lights[1].position.x <= -3) {
 		light2_move = light_move_speed * clockDelta;
 	}
-	light2.position.x += light2_move;
+	lights[1].position.x += light2_move;
+
+
+	/*if (gamepadState.buttons[GAMEPAD.GAMEPAD_A]) {
+		//shoot
+	}*/
 }
 
 
 const dolly_move_speed = 6; // meters per second
-const dolly_turn_speed = 1; // rotations per second
+const dolly_turn_speed = 0.5; // rotations per second
 function gamepadUpdate(clockDelta) {
 	/*let buttons = GAMEPAD.getButtons();
 	let axes = GAMEPAD.getAxes();*/
-	let gamepadState = GAMEPAD.getAllState();
+	gamepadState = GAMEPAD.getAllState();
 	//console.log('buttons: ' + buttons + ' axes: ' + axes);
 	//console.log('rotation: ' + dolly.rotation.y);
 
@@ -213,10 +232,14 @@ function gamepadUpdate(clockDelta) {
 		dolly_pos.x += dolly_move_speed * clockDelta;
 	}*/
 	if (gamepadState.buttons[GAMEPAD.GAMEPAD_TURN_LEFT]) {
-		dolly.rotation.set(0, dolly.rotation.y + PI * clockDelta, 0);
+		//let turn_value = camera.rotation.y + PI2 * dolly_turn_speed * clockDelta;
+		dolly.rotateY(PI2 * dolly_turn_speed * clockDelta);
+		//camera.rotation.set(0, camera.rotation.y + PI2 * dolly_turn_speed * clockDelta, 0);
 	}
 	if (gamepadState.buttons[GAMEPAD.GAMEPAD_TURN_RIGHT]) {
-		dolly.rotation.set(0, dolly.rotation.y - PI * clockDelta, 0);
+		//let turn_value = camera.rotation.y - PI2 * dolly_turn_speed * clockDelta;
+		//camera.rotation.set(0, camera.rotation.y - PI2 * dolly_turn_speed * clockDelta, 0);
+		dolly.rotateY(-PI2 * dolly_turn_speed * clockDelta);
 	}
 
 	/*if (gamepadState.axes[GAMEPAD.GAMEPAD_UP] > 0) {
@@ -237,12 +260,12 @@ function gamepadUpdate(clockDelta) {
 	//Store original dolly rotation
 	const quaternion = dolly.quaternion.clone();
 	//Get rotation for movement from the headset pose
-	var worldQuaternion = dolly_pos.getWorldQuaternion(new THREE.Quaternion());
+	var worldQuaternion = dummyCam.getWorldQuaternion(new THREE.Quaternion());
 	dolly.quaternion.copy(worldQuaternion);
 
 	//dolly.quaternion.copy(dolly_pos.getWorldQuaternion());
-	dolly.translateZ(-(gamepadState.axes[GAMEPAD.GAMEPAD_UP] - gamepadState.axes[GAMEPAD.GAMEPAD_DOWN]) * dolly_move_speed * clockDelta);
-	dolly.translateX(-(gamepadState.axes[GAMEPAD.GAMEPAD_LEFT] - gamepadState.axes[GAMEPAD.GAMEPAD_RIGHT]) * dolly_move_speed * clockDelta);
+	dolly.translateZ(-(gamepadState.axes[GAMEPAD.GAMEPAD_UP] - gamepadState.axes[GAMEPAD.GAMEPAD_DOWN])/100 * dolly_move_speed * clockDelta);
+	dolly.translateX(-(gamepadState.axes[GAMEPAD.GAMEPAD_LEFT] - gamepadState.axes[GAMEPAD.GAMEPAD_RIGHT])/100 * dolly_move_speed * clockDelta);
 	dolly.position.y = 0;
 	dolly.quaternion.copy(quaternion);
 }

@@ -206,7 +206,7 @@ function keyDown(e) {
 	}
 }
 function keyUp(e) {
-	console.log('keyUp ' + e.key);
+	//onsole.log('keyUp ' + e.key);
 	switch(e.key){
 		case "w":
 		case "W":
