@@ -1,0 +1,11 @@
+Model Information:
+* title:	Portal: Companion Cube
+* source:	https://sketchfab.com/3d-models/portal-companion-cube-1b098d92d80648a1be20a37e0e477ab9
+* author:	Pixel-bit (https://sketchfab.com/Pixel-bit)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Portal: Companion Cube" (https://sketchfab.com/3d-models/portal-companion-cube-1b098d92d80648a1be20a37e0e477ab9) by Pixel-bit (https://sketchfab.com/Pixel-bit) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

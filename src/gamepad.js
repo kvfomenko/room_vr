@@ -171,12 +171,14 @@ function keyDown(e) {
 		case "ф":
 		case "Ф":
 			simulationData.buttons[GAMEPAD_C] = true;
+			simulationData.axes[GAMEPAD_LEFT] = 100;
 			break;
 		case "d":
 		case "D":
 		case "в":
 		case "В":
 			simulationData.buttons[GAMEPAD_D] = true;
+			simulationData.axes[GAMEPAD_RIGHT] = 100;
 			break;
 		case "q":
 		case "Q":
@@ -198,10 +200,12 @@ function keyDown(e) {
 			simulationData.axes[GAMEPAD_DOWN] = 100;
 			break;
 		case "ArrowLeft":
-			simulationData.axes[GAMEPAD_LEFT] = 100;
+			simulationData.buttons[GAMEPAD_TURN_LEFT] = true;
+			//simulationData.axes[GAMEPAD_LEFT] = 100;
 			break;
 		case "ArrowRight":
-			simulationData.axes[GAMEPAD_RIGHT] = 100;
+			simulationData.buttons[GAMEPAD_TURN_RIGHT] = true;
+			//simulationData.axes[GAMEPAD_RIGHT] = 100;
 			break;
 	}
 }
@@ -225,12 +229,14 @@ function keyUp(e) {
 		case "ф":
 		case "Ф":
 			simulationData.buttons[GAMEPAD_C] = false;
+			simulationData.axes[GAMEPAD_LEFT] = 0;
 			break;
 		case "d":
 		case "D":
 		case "в":
 		case "В":
 			simulationData.buttons[GAMEPAD_D] = false;
+			simulationData.axes[GAMEPAD_RIGHT] = 0;
 			break;
 		case "q":
 		case "Q":
@@ -253,9 +259,11 @@ function keyUp(e) {
 			break;
 		case "ArrowLeft":
 			simulationData.axes[GAMEPAD_LEFT] = 0;
+			simulationData.buttons[GAMEPAD_TURN_LEFT] = false;
 			break;
 		case "ArrowRight":
 			simulationData.axes[GAMEPAD_RIGHT] = 0;
+			simulationData.buttons[GAMEPAD_TURN_RIGHT] = false;
 			break;
 	}
 }

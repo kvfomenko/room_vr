@@ -44,7 +44,31 @@ function draw_axis(scene, distance, size) {
 	obj_1 = new THREE.Mesh(geometry_1, material_1);
 	obj_1.position.z = -distance;
 	scene.add(obj_1);
+
+
+	/*geometry_1 = new THREE.BoxGeometry(10, 0.05, 0.05, 1, 1, 1);
+	material_1 = new THREE.MeshStandardMaterial({transparent: false, color: 0xFF0000});
+	const line_x = new THREE.Mesh(geometry_1, material_1);
+	scene.add(line_x);
+
+	geometry_1 = new THREE.BoxGeometry(0.05, 10, 0.05, 1, 1, 1);
+	material_1 = new THREE.MeshStandardMaterial({transparent: false, color: 0x00FF00});
+	const line_y = new THREE.Mesh(geometry_1, material_1);
+	scene.add(line_y);
+
+	geometry_1 = new THREE.BoxGeometry(0.05, 0.05, 10, 1, 1, 1);
+	material_1 = new THREE.MeshStandardMaterial({transparent: false, color: 0x0000FF});
+	const line_z = new THREE.Mesh(geometry_1, material_1);
+	scene.add(line_z);*/
 }
 
+/*function rotateAroundWorldAxis( object, axis, radians ) {
+	var rotationMatrix = new THREE.Matrix4();
+
+	rotationMatrix.makeRotationAxis( axis.normalize(), radians );
+	rotationMatrix.multiplySelf( object.matrix );                       // pre-multiply
+	object.matrix = rotationMatrix;
+	object.rotation.setEulerFromRotationMatrix( object.matrix );
+}*/
 
 export {draw_axis};
